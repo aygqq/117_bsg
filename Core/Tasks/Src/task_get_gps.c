@@ -52,7 +52,7 @@ void taskGetGPS(void const *argument) {
     getServerTime();
     generateInitTelemetry();
     unLockTasks();
-    gps_step = GPS_STEP_TIMESYNC;
+    gps_step = GPS_STEP_WORK;
 
     for (;;) {
         iwdgTaskReg |= IWDG_TASK_REG_GPS;
@@ -92,9 +92,9 @@ void taskGetGPS(void const *argument) {
                                 saveData((u8 *)&bufPckgGnss, SZ_CMD_GEO_PLUS, CMD_DATA_GEO_PLUS, &circBufAllPckgs);
                             }
                         }
-                        if (!(numIteration % 1800)) {
-                            setGPSUnixTime(&pckgGnss.dateTime);
-                        }
+                        // if (!(numIteration % 1800)) {
+                        //     setGPSUnixTime(&pckgGnss.dateTime);
+                        // }
                         numIteration++;
                     } else if (ret == GPS_GPRMC_ERR_INVALID_DATA_STATUS) {
                         bsg.cur_gps.valid = 0;
@@ -204,80 +204,67 @@ void generateInitTelemetry() {
 }
 
 void generateTestPackage() {
-    PckgTelemetry pckgTel;
-    PckgTemp      pckgTemp;
-    PckgGnss      pckgGnss;
-    PckgDoors     pckgDoors;
+    // PckgTelemetry pckgTel;
+    PckgTemp pckgTemp;
+    // PckgGnss      pckgGnss;
+    PckgDoors pckgDoors;
+
+    static u8 temp = 0;
+    static u8 door = 0;
+    temp = (temp + 1) % 30;
+    door = (door + 1) % 2;
 
     LOG_WEB(LEVEL_MAIN, "Generate TEST package\r\n");
 
-    pckgTel.group = 0x10;
-    pckgTel.code = 0x01;
-    pckgTel.data = 4;
-    saveTelemetry(&pckgTel, &circBufAllPckgs);
-
-    pckgTel.group = 0x10;
-    pckgTel.code = 0x02;
-    pckgTel.data = 3;
-    saveTelemetry(&pckgTel, &circBufAllPckgs);
-
-    pckgTel.group = 0x10;
-    pckgTel.code = 0x03;
-    pckgTel.data = 3;
-    saveTelemetry(&pckgTel, &circBufAllPckgs);
-
-    pckgTel.group = 0x10;
-    pckgTel.code = 0x04;
-    pckgTel.data = (3 << 24) | 7;
-    saveTelemetry(&pckgTel, &circBufAllPckgs);
-
-    pckgTel.group = 0x10;
-    pckgTel.code = 0x05;
-    pckgTel.data = (3 << 24) | 8;
-    saveTelemetry(&pckgTel, &circBufAllPckgs);
+    // pckgTel.group = 0x10;
+    // pckgTel.code = 0x01;
+    // pckgTel.data = 4;
+    // saveTelemetry(&pckgTel, &circBufAllPckgs);
+    // pckgTel.group = 0x10;
+    // pckgTel.code = 0x02;
+    // pckgTel.data = 3;
+    // saveTelemetry(&pckgTel, &circBufAllPckgs);
+    // pckgTel.group = 0x10;
+    // pckgTel.code = 0x03;
+    // pckgTel.data = 3;
+    // saveTelemetry(&pckgTel, &circBufAllPckgs);
+    // pckgTel.group = 0x10;
+    // pckgTel.code = 0x04;
+    // pckgTel.data = (3 << 24) | 7;
+    // saveTelemetry(&pckgTel, &circBufAllPckgs);
+    // pckgTel.group = 0x10;
+    // pckgTel.code = 0x05;
+    // pckgTel.data = (3 << 24) | 8;
+    // saveTelemetry(&pckgTel, &circBufAllPckgs);
 
     pckgTemp.unixTimeStamp = getUnixTimeStamp();
     pckgTemp.temp[0] = 102;
     pckgTemp.temp[1] = 0;
-    pckgTemp.temp[2] = 3;
-    pckgTemp.temp[3] = 16;
-    saveData((u8 *)&pckgTemp, SZ_CMD_TEMP, CMD_DATA_TEMP, &circBufAllPckgs);
-    pckgTemp.temp[2] = 4;
-    pckgTemp.temp[3] = 17;
-    saveData((u8 *)&pckgTemp, SZ_CMD_TEMP, CMD_DATA_TEMP, &circBufAllPckgs);
-    pckgTemp.temp[2] = 5;
-    pckgTemp.temp[3] = 16;
-    saveData((u8 *)&pckgTemp, SZ_CMD_TEMP, CMD_DATA_TEMP, &circBufAllPckgs);
-    pckgTemp.temp[2] = 6;
-    pckgTemp.temp[3] = 15;
-    saveData((u8 *)&pckgTemp, SZ_CMD_TEMP, CMD_DATA_TEMP, &circBufAllPckgs);
-
-    pckgGnss.unixTimeStamp = getUnixTimeStamp();
-    pckgGnss.coords.latitude.fst = 6002;
-    pckgGnss.coords.latitude.sec = 797666;
-    pckgGnss.coords.longitude.fst = 3020;
-    pckgGnss.coords.longitude.sec = 346243;
-    pckgGnss.coords.altitude = 4454;
-    pckgGnss.coords.course = 2968;
-    pckgGnss.coords.speed = 9;
-    pckgGnss.coords.sattelites = 12;
-    pckgGnss.coords.hdop = 88;
-    serializePckgGnss(bufPckgGnss, &pckgGnss);
-    saveData((u8 *)&bufPckgGnss, SZ_CMD_GEO_PLUS, CMD_DATA_GEO_PLUS, &circBufAllPckgs);
+    for (u8 i = 0; i < 10; i++) {
+        pckgTemp.temp[2] = i + 1;
+        pckgTemp.temp[3] = temp + 1;
+        saveData((u8 *)&pckgTemp, SZ_CMD_TEMP, CMD_DATA_TEMP, &circBufAllPckgs);
+    }
 
     pckgDoors.unixTimeStamp = getUnixTimeStamp();
-    pckgDoors.number = 1;
-    pckgDoors.state = 7;
-    saveData((u8 *)&pckgDoors, SZ_CMD_DOORS, CMD_DATA_DOORS, &circBufAllPckgs);
-    pckgDoors.number = 1;
-    pckgDoors.state = 6;
-    saveData((u8 *)&pckgDoors, SZ_CMD_DOORS, CMD_DATA_DOORS, &circBufAllPckgs);
-    pckgDoors.number = 1;
-    pckgDoors.state = 4;
-    saveData((u8 *)&pckgDoors, SZ_CMD_DOORS, CMD_DATA_DOORS, &circBufAllPckgs);
-    pckgDoors.number = 1;
-    pckgDoors.state = 0;
-    saveData((u8 *)&pckgDoors, SZ_CMD_DOORS, CMD_DATA_DOORS, &circBufAllPckgs);
+    for (u8 i = 0; i < 10; i++) {
+        pckgDoors.number = i + 1;
+        pckgDoors.state = 6 | door;
+        saveData((u8 *)&pckgDoors, SZ_CMD_DOORS, CMD_DATA_DOORS, &circBufAllPckgs);
+    }
 
-    updSpiFlash(&circBufAllPckgs);
+    // pckgGnss.unixTimeStamp = getUnixTimeStamp();
+    // pckgGnss.coords.latitude.fst = 6002;
+    // pckgGnss.coords.latitude.sec = 797666;
+    // pckgGnss.coords.longitude.fst = 3020;
+    // pckgGnss.coords.longitude.sec = 346243;
+    // pckgGnss.coords.altitude = 4454;
+    // pckgGnss.coords.course = 2968;
+    // pckgGnss.coords.speed = 9;
+    // pckgGnss.coords.sattelites = 12;
+    // pckgGnss.coords.hdop = 88;
+    // serializePckgGnss(bufPckgGnss, &pckgGnss);
+    // saveData((u8 *)&bufPckgGnss, SZ_CMD_GEO_PLUS, CMD_DATA_GEO_PLUS, &circBufAllPckgs);
+
+    // updSpiFlash(&circBufAllPckgs);
 }

@@ -1,5 +1,6 @@
 #include "../Tasks/Inc/task_get_train_data.h"
 
+#include "../Tasks/Inc/task_get_gps.h"
 #include "../Tasks/Inc/task_iwdg.h"
 #include "../Tasks/Inc/task_keep_alive.h"
 #include "../Utils/Inc/circularBuffer.h"
@@ -23,10 +24,10 @@ u16  tablo_create_request(u8* request, u8 cmd, u8* data, u8 len);
 u8   tablo_parse_responce(UartInfo* pUInf);
 
 void taskGetTrainData(void const* argument) {
-    u16        iter = 0;
-    u8         res;
-    u32        timeStamp;
-    gps_body_t gps_body;
+    // u16        iter = 0;
+    // u8         res;
+    // u32        timeStamp;
+    // gps_body_t gps_body;
     osSemaphoreWait(uart6RXSemHandle, osWaitForever);
 
     vTaskSuspend(getTrainDataHandle);
@@ -34,63 +35,63 @@ void taskGetTrainData(void const* argument) {
 
     for (;;) {
         iwdgTaskReg |= IWDG_TASK_REG_TABLO;
-        // osDelay(1000);
-        // continue;
+        osDelay(60000);
+        generateTestPackage();
 
-        switch (bsg.tablo.initStep) {
-            case IU_INIT_NONE:
-                LOG(LEVEL_MAIN, "IU_INIT_NONE\r\n");
-                gps_body.valid = bsg.cur_gps.valid;
-                gps_body.speed = bsg.cur_gps.coords.speed;
-                gps_body.stopTime = bsg.cur_gps.stopTime;
+        // switch (bsg.tablo.initStep) {
+        //     case IU_INIT_NONE:
+        //         LOG(LEVEL_MAIN, "IU_INIT_NONE\r\n");
+        //         gps_body.valid = bsg.cur_gps.valid;
+        //         gps_body.speed = bsg.cur_gps.coords.speed;
+        //         gps_body.stopTime = bsg.cur_gps.stopTime;
 
-                if (tablo_send_request(CMD_GNSS_SHORT, (u8*)&gps_body, sizeof(gps_body_t))) {
-                    bsg.tablo.initStep = IU_INIT_TIMESYNC;
-                } else {
-                    osDelay(1000);
-                }
-                bsg.tablo.initStep = IU_INIT_TIMESYNC;
-                break;
-            case IU_INIT_TIMESYNC:
-                LOG(LEVEL_MAIN, "IU_INIT_TIMESYNC\r\n");
-                timeStamp = getUnixTimeStamp();
-                if (tablo_send_request(CMD_SYNC, (u8*)&timeStamp, sizeof(timeStamp))) {
-                    bsg.tablo.initStep = IU_INIT_GET_INFO;
-                } else {
-                    osDelay(1000);
-                }
-                break;
-            case IU_INIT_GET_INFO:
-                LOG(LEVEL_MAIN, "IU_INIT_GET_INFO\r\n");
-                bsg.tablo.info.idFirmware = 0;
-                res = tablo_send_request(CMD_GET_INFO, NULL, 0);
-                if (res && bsg.tablo.info.idFirmware != 0 && bsg.tablo.info.idMCU[0] != 0) {
-                    bsg.tablo.initStep = IU_INIT_COMPLETE;
-                }
+        //         if (tablo_send_request(CMD_GNSS_SHORT, (u8*)&gps_body, sizeof(gps_body_t))) {
+        //             bsg.tablo.initStep = IU_INIT_TIMESYNC;
+        //         } else {
+        //             osDelay(1000);
+        //         }
+        //         bsg.tablo.initStep = IU_INIT_TIMESYNC;
+        //         break;
+        //     case IU_INIT_TIMESYNC:
+        //         LOG(LEVEL_MAIN, "IU_INIT_TIMESYNC\r\n");
+        //         timeStamp = getUnixTimeStamp();
+        //         if (tablo_send_request(CMD_SYNC, (u8*)&timeStamp, sizeof(timeStamp))) {
+        //             bsg.tablo.initStep = IU_INIT_GET_INFO;
+        //         } else {
+        //             osDelay(1000);
+        //         }
+        //         break;
+        //     case IU_INIT_GET_INFO:
+        //         LOG(LEVEL_MAIN, "IU_INIT_GET_INFO\r\n");
+        //         bsg.tablo.info.idFirmware = 0;
+        //         res = tablo_send_request(CMD_GET_INFO, NULL, 0);
+        //         if (res && bsg.tablo.info.idFirmware != 0 && bsg.tablo.info.idMCU[0] != 0) {
+        //             bsg.tablo.initStep = IU_INIT_COMPLETE;
+        //         }
 
-                generateMsgTabloFW();
-                break;
-            case IU_INIT_COMPLETE:
-                if (iter % 10000 == 7000) {
-                    timeStamp = getUnixTimeStamp();
-                    tablo_send_request(CMD_SYNC, (u8*)&timeStamp, sizeof(timeStamp));
-                } else if (iter % 50 == 40) {
-                    gps_body.valid = bsg.cur_gps.valid;
-                    gps_body.speed = bsg.cur_gps.coords.speed;
-                    gps_body.stopTime = bsg.cur_gps.stopTime;
-                    tablo_send_request(CMD_GNSS_SHORT, (u8*)&gps_body, sizeof(gps_body_t));
-                } else if (iter % 5000 == 3013) {
-                    tablo_send_request(CMD_GET_INFO, NULL, 0);
-                }
-                osDelay(100);
-                tablo_send_request(CMD_DATA, (u8*)&uInfoTablo.szRxBuf, sizeof(uInfoTablo.szRxBuf));
-                iter++;
-                break;
-            default:
-                bsg.tablo.initStep = IU_INIT_NONE;
-                break;
-        }
-        osDelay(100);
+        //         generateMsgTabloFW();
+        //         break;
+        //     case IU_INIT_COMPLETE:
+        //         if (iter % 10000 == 7000) {
+        //             timeStamp = getUnixTimeStamp();
+        //             tablo_send_request(CMD_SYNC, (u8*)&timeStamp, sizeof(timeStamp));
+        //         } else if (iter % 50 == 40) {
+        //             gps_body.valid = bsg.cur_gps.valid;
+        //             gps_body.speed = bsg.cur_gps.coords.speed;
+        //             gps_body.stopTime = bsg.cur_gps.stopTime;
+        //             tablo_send_request(CMD_GNSS_SHORT, (u8*)&gps_body, sizeof(gps_body_t));
+        //         } else if (iter % 5000 == 3013) {
+        //             tablo_send_request(CMD_GET_INFO, NULL, 0);
+        //         }
+        //         osDelay(100);
+        //         tablo_send_request(CMD_DATA, (u8*)&uInfoTablo.szRxBuf, sizeof(uInfoTablo.szRxBuf));
+        //         iter++;
+        //         break;
+        //     default:
+        //         bsg.tablo.initStep = IU_INIT_NONE;
+        //         break;
+        // }
+        // osDelay(100);
     }
 }
 

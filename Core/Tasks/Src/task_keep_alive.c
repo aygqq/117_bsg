@@ -26,14 +26,14 @@ void taskKeepAlive(void const* argument) {
     vTaskSuspend(keepAliveHandle);
 
     for (;;) {
-        if ((timeout % 360 == 100) && !isRxNewFirmware) {
-            LOG(LEVEL_MAIN, "getBsgNumFw\r\n\r\n");
-            getBsgNumFw();
-        }
-        if ((timeout % 360 == 200) && !isRxNewFirmware) {
-            LOG(LEVEL_MAIN, "getTabloNumFw\r\n\r\n");
-            getTabloNumFw();
-        }
+        // if ((timeout % 360 == 100) && !isRxNewFirmware) {
+        //     LOG(LEVEL_MAIN, "getBsgNumFw\r\n\r\n");
+        //     getBsgNumFw();
+        // }
+        // if ((timeout % 360 == 200) && !isRxNewFirmware) {
+        //     LOG(LEVEL_MAIN, "getTabloNumFw\r\n\r\n");
+        //     getTabloNumFw();
+        // }
         if (!(timeout % 180) && !isRxNewFirmware) {
             LOG(LEVEL_MAIN, "sendMsgStatistics\r\n");
             sendMsgStatistics();

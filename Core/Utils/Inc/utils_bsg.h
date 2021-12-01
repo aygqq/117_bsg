@@ -26,7 +26,7 @@
 
 #define BSG_MSG_NO_GPS (char*)"0000.000000,N,00000.000000,E,+0000,000,000"
 
-#define BSG_ID_FIRMWARE         9
+#define BSG_ID_FIRMWARE         1
 #define BSG_ID_BOOT             2
 #define BSG_ID_TRAINCAR         0
 #define BSG_ID_TRAIN            1706
