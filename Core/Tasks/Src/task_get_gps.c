@@ -249,7 +249,7 @@ void generateTestPackage() {
     pckgDoors.unixTimeStamp = getUnixTimeStamp();
     for (u8 i = 0; i < 10; i++) {
         pckgDoors.number = i + 1;
-        pckgDoors.state = 6 | door;
+        pckgDoors.state = (6 | door) << 4 | (6 | door);
         saveData((u8 *)&pckgDoors, SZ_CMD_DOORS, CMD_DATA_DOORS, &circBufAllPckgs);
     }
 
