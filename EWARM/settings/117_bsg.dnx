@@ -20,7 +20,7 @@
         <stlinkResetStrategy>0</stlinkResetStrategy>
     </StLinkDriver>
     <DebugChecksum>
-        <Checksum>436913595</Checksum>
+        <Checksum>3949547230</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -68,7 +68,9 @@
         <Fmt8>RTC_DateTypeDef-Year	3	0</Fmt8>
     </struct_types>
     <array_types>
-        <Fmt0>u8[20]	4	0</Fmt0>
+        <Fmt0>u8[10]	1	0</Fmt0>
+        <Fmt1>u8[20]	4	0</Fmt1>
+        <Fmt2>u8[32]	1	0</Fmt2>
     </array_types>
     <Trace2>
         <Enabled>0</Enabled>

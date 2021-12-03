@@ -49,10 +49,10 @@ void taskGetGPS(void const *argument) {
     }
 
     // TODO: time should be syncronized by GPS
-    getServerTime();
-    generateInitTelemetry();
-    unLockTasks();
-    gps_step = GPS_STEP_WORK;
+    // getServerTime();
+    // generateInitTelemetry();
+    // unLockTasks();
+    gps_step = GPS_STEP_TIMESYNC;
 
     for (;;) {
         iwdgTaskReg |= IWDG_TASK_REG_GPS;
@@ -71,9 +71,8 @@ void taskGetGPS(void const *argument) {
                         if (!setGPSUnixTime(&pckgGnss.dateTime)) {
                             break;
                         }
-                        // // generateTestPackage();
-                        // generateInitTelemetry();
-                        // unLockTasks();
+                        generateInitTelemetry();
+                        unLockTasks();
 
                         gps_step = GPS_STEP_WORK;
                     }
@@ -249,7 +248,7 @@ void generateTestPackage() {
     pckgDoors.unixTimeStamp = getUnixTimeStamp();
     for (u8 i = 0; i < 10; i++) {
         pckgDoors.number = i + 1;
-        pckgDoors.state = (6 | door) << 4 | (6 | door);
+        pckgDoors.state = ((3 | door << 2) << 4 | (3 | door << 2)) & 0xFF;
         saveData((u8 *)&pckgDoors, SZ_CMD_DOORS, CMD_DATA_DOORS, &circBufAllPckgs);
     }
 
